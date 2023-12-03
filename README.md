@@ -12,7 +12,7 @@ This Python script extracts top stories from Hacker News and sends them as an HT
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your-username/hacker-news-emailer.git
+    git clone https://github.com/hollali/Automate.git
     ```
 
 2. Install the required Python packages:
