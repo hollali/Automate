@@ -35,7 +35,7 @@ This Python script extracts top stories from Hacker News and sends them as an HT
 4. Run the script:
 
     ```bash
-    python hacker_news_emailer.py
+    Automate.py
     ```
 
 ## License
