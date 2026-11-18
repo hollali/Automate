@@ -49,6 +49,23 @@
     0 8 * * * cd /path/to/Automate && EMAIL_FROM="you@gmail.com" EMAIL_TO="me@example.com" EMAIL_PASSWORD="app_password" ./Automate.py
     ```
 
+## CI/CD
+
+Two GitHub Actions workflows are included:
+
+- **CI** (`.github/workflows/ci.yml`): on pushes and pull requests to `main`, lints with Ruff and runs the unit tests on Python 3.11–3.14.
+- **CD** (`.github/workflows/daily-email.yml`): runs `Automate.py` every day at 08:00 **UTC** and on manual trigger from the Actions tab.
+
+To enable the scheduled email, add these repository secrets under **Settings → Secrets and variables → Actions**:
+
+| Secret | Value |
+| --- | --- |
+| `EMAIL_FROM` | Sender Gmail address |
+| `EMAIL_TO` | Recipient address(es), comma-separated |
+| `EMAIL_PASSWORD` | Gmail App Password |
+
+GitHub may disable scheduled workflows in repositories with no activity for 60 days.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
