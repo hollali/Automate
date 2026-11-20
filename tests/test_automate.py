@@ -63,8 +63,7 @@ class BuildContentTests(unittest.TestCase):
             content,
         )
         self.assertIn(
-            '2:: <a href="https://example.com/x?a=1&amp;b=2">'
-            "Second &amp; story</a>",
+            '2:: <a href="https://example.com/x?a=1&amp;b=2">Second &amp; story</a>',
             content,
         )
         self.assertNotIn("More", content)
@@ -115,9 +114,7 @@ class SendEmailTests(unittest.TestCase):
         )
         self.server.ehlo.assert_called()
         self.server.starttls.assert_called_once_with()
-        self.server.login.assert_called_once_with(
-            "from@example.com", "app-password"
-        )
+        self.server.login.assert_called_once_with("from@example.com", "app-password")
         self.assertEqual(
             self.server.sendmail.call_args.args[:2],
             ("from@example.com", ["a@example.com", "b@example.com"]),
@@ -143,9 +140,7 @@ class RetryTests(unittest.TestCase):
             return "ok"
 
         with patch.object(Automate.time, "sleep") as sleep:
-            self.assertEqual(
-                Automate.retry(operation, exceptions=(OSError,)), "ok"
-            )
+            self.assertEqual(Automate.retry(operation, exceptions=(OSError,)), "ok")
         self.assertEqual(len(calls), 3)
         self.assertEqual(sleep.call_count, 2)
 
@@ -183,9 +178,7 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(Automate.main(), 1)
 
     def test_main_rejects_invalid_port(self):
-        with patch.dict(
-            Automate.os.environ, {"SMTP_PORT": "nope"}, clear=True
-        ):
+        with patch.dict(Automate.os.environ, {"SMTP_PORT": "nope"}, clear=True):
             self.assertEqual(Automate.main(), 1)
 
     def test_main_skips_email_when_no_stories(self):
@@ -200,9 +193,7 @@ class ConfigTests(unittest.TestCase):
     def test_main_sends_email(self):
         with (
             patch.dict(Automate.os.environ, CREDENTIALS, clear=True),
-            patch.object(
-                Automate, "extract_stories", return_value=EXPECTED_STORIES
-            ),
+            patch.object(Automate, "extract_stories", return_value=EXPECTED_STORIES),
             patch.object(Automate, "send_email") as send,
         ):
             self.assertEqual(Automate.main(), 0)

@@ -46,8 +46,7 @@ def retry(operation, exceptions=(Exception,), attempts=RETRIES, delay=RETRY_DELA
             if attempt == attempts:
                 raise
             print(
-                f"Attempt {attempt}/{attempts} failed ({exc}); "
-                f"retrying in {delay}s...",
+                f"Attempt {attempt}/{attempts} failed ({exc}); retrying in {delay}s...",
                 file=sys.stderr,
             )
             time.sleep(delay)
@@ -81,22 +80,115 @@ def extract_stories(url=HN_URL):
 
 
 def build_content(stories):
-    """Render the story list as an HTML email body."""
-    lines = ["<b>Top Stories:</b><br>", "-" * 50 + "<br>"]
+    """Render the story list as a polished, responsive HTML email body."""
+    today = dt.datetime.now(dt.UTC).date()
+    date_label = f"{today:%A, %B} {today.day}, {today.year}"
+
+    rows = []
     for rank, (title, link) in enumerate(stories, start=1):
         safe_title = html.escape(title)
         if link:
             safe_link = html.escape(link, quote=True)
-            lines.append(f'{rank}:: <a href="{safe_link}">{safe_title}</a><br>')
+            item = f'{rank}:: <a href="{safe_link}">{safe_title}</a>'
         else:
-            lines.append(f"{rank}:: {safe_title}<br>")
-    lines.extend(["<br>-----<br>", "<br>End of Message"])
-    return "\n".join(lines)
+            item = f"{rank}:: {safe_title}"
+        rows.append(
+            '<tr><td class="pad" style="padding:15px 32px;'
+            "border-top:1px solid #eef1f4;font-size:15px;"
+            'line-height:1.55;color:#1f2937;">'
+            f"{item}</td></tr>"
+        )
+
+    style = (
+        '<style type="text/css">'
+        "a{color:#d9480f;text-decoration:none;font-weight:600;}"
+        "a:hover{text-decoration:underline;}"
+        "@media only screen and (max-width:620px){"
+        "table.card{width:100%!important;border-radius:0!important;}"
+        "td.pad{padding-left:20px!important;padding-right:20px!important;}"
+        "}"
+        "</style>"
+    )
+
+    return "\n".join(
+        [
+            "<!DOCTYPE html>",
+            '<html lang="en">',
+            "<head>",
+            '<meta charset="utf-8">',
+            ('<meta name="viewport" content="width=device-width,initial-scale=1">'),
+            f"<title>HN Digest - {date_label}</title>",
+            style,
+            "</head>",
+            '<body style="margin:0;padding:0;background:#f3f4f6;">',
+            (
+                '<table role="presentation" width="100%" cellpadding="0" '
+                'cellspacing="0" border="0" '
+                'style="background:#f3f4f6;padding:32px 16px;">'
+            ),
+            '<tr><td align="center">',
+            (
+                '<table role="presentation" class="card" width="600" '
+                'cellpadding="0" cellspacing="0" border="0" '
+                'style="width:600px;max-width:600px;background:#ffffff;'
+                "border-radius:14px;overflow:hidden;"
+                "box-shadow:0 6px 24px rgba(15,23,42,.08);"
+                "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',"
+                'Roboto,Helvetica,Arial,sans-serif;">'
+            ),
+            '<tr><td style="background:#ff6600;padding:30px 32px;">',
+            (
+                '<p style="margin:0;font-size:11px;font-weight:700;'
+                "letter-spacing:2px;text-transform:uppercase;"
+                'color:#ffd9c2;">Daily Digest</p>'
+            ),
+            (
+                '<h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;'
+                'color:#ffffff;">Hacker News Top Stories</h1>'
+            ),
+            (
+                f'<p style="margin:10px 0 0;font-size:14px;color:#ffe8d9;">'
+                f"{date_label}</p>"
+            ),
+            "</td></tr>",
+            '<tr><td class="pad" style="padding:28px 32px 24px;">',
+            (
+                '<p style="margin:0;font-size:15px;line-height:1.6;'
+                'color:#4b5563;">Your daily roundup of the most-discussed '
+                "stories from the Hacker News front page.</p>"
+            ),
+            "</td></tr>",
+            '<tr><td class="pad" style="padding:0 32px 12px;">',
+            (
+                '<p style="margin:0;font-size:11px;font-weight:700;'
+                "letter-spacing:1.6px;text-transform:uppercase;"
+                'color:#9ca3af;">Top stories '
+                f"&middot; {len(stories)}</p>"
+            ),
+            "</td></tr>",
+            *rows,
+            (
+                '<tr><td class="pad" style="padding:24px 32px;'
+                'border-top:1px solid #e5e7eb;background:#f9fafb;">'
+            ),
+            (
+                '<p style="margin:0;font-size:12px;line-height:1.5;'
+                'color:#9ca3af;text-align:center;">Automatically generated '
+                "from news.ycombinator.com</p>"
+            ),
+            "</td></tr>",
+            "</table>",
+            "</td></tr>",
+            "</table>",
+            "</body>",
+            "</html>",
+        ]
+    )
 
 
 def build_message(content, sender, recipients):
     """Create the MIME message with a UTF-8 encoded HTML body."""
-    today = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    today = dt.datetime.now(dt.UTC).date().isoformat()
     message = MIMEMultipart()
     message["Subject"] = f"Top News Stories HN [Automated Email] {today}"
     message["From"] = sender
@@ -118,9 +210,7 @@ def send_email(config, content):
             server.ehlo()
             if config["password"]:
                 server.login(config["sender"], config["password"])
-            server.sendmail(
-                config["sender"], config["recipients"], message.as_string()
-            )
+            server.sendmail(config["sender"], config["recipients"], message.as_string())
 
     print("Initiating server...")
     retry(
