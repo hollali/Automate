@@ -1,10 +1,10 @@
 # Hacker News Scraper and Emailer
 
-`Automate.py` scrapes the Hacker News front page and emails the top stories as an HTML message.
+`Automate.py` scrapes Hacker News and several certified tech news feeds, then emails the top stories as an HTML message.
 
 ## What it does
 
-- Fetches `https://news.ycombinator.com` with a timeout and a User-Agent.
+- Fetches Hacker News plus configured tech news RSS feeds with a timeout and a User-Agent.
 - Extracts story titles and links, numbering them without gaps.
 - Escapes titles and URLs, then sends a UTF-8 HTML email over SMTP with STARTTLS.
 - Retries transient network failures and never sends an empty email.

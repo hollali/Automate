@@ -184,7 +184,7 @@ class ConfigTests(unittest.TestCase):
     def test_main_skips_email_when_no_stories(self):
         with (
             patch.dict(Automate.os.environ, CREDENTIALS, clear=True),
-            patch.object(Automate, "extract_stories", return_value=[]),
+            patch.object(Automate, "extract_all_stories", return_value=[]),
             patch.object(Automate, "send_email") as send,
         ):
             self.assertEqual(Automate.main(), 1)
@@ -193,7 +193,7 @@ class ConfigTests(unittest.TestCase):
     def test_main_sends_email(self):
         with (
             patch.dict(Automate.os.environ, CREDENTIALS, clear=True),
-            patch.object(Automate, "extract_stories", return_value=EXPECTED_STORIES),
+            patch.object(Automate, "extract_all_stories", return_value=EXPECTED_STORIES),
             patch.object(Automate, "send_email") as send,
         ):
             self.assertEqual(Automate.main(), 0)
